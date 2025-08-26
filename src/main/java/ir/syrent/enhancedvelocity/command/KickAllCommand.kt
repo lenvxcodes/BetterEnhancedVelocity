@@ -6,6 +6,7 @@ import ir.syrent.enhancedvelocity.utils.TextReplacement
 import ir.syrent.enhancedvelocity.utils.sendMessage
 import ir.syrent.enhancedvelocity.vruom.VRuom
 import java.util.concurrent.CompletableFuture
+import kotlin.jvm.optionals.getOrNull
 
 class KickAllCommand : SimpleCommand {
 
@@ -27,15 +28,15 @@ class KickAllCommand : SimpleCommand {
             return
         }
 
-        val target = VRuom.getServer().allServers.find { it.serverInfo.name.lowercase() == args[0] }
+        val targetPlayers = if (args[0].lowercase() == "all") VRuom.getOnlinePlayers() else VRuom.getServer().allServers.find { it.serverInfo.name.lowercase() == args[0].lowercase() }?.playersConnected
 
-        if (target == null) {
+        if (targetPlayers == null) {
             sender.sendMessage(Message.KICKALL_NO_SERVER)
             return
         }
 
-        target.playersConnected.filter { !it.hasPermission(Permissions.Actions.KICKALL_BYPASS) }.forEach { it.createConnectionRequest(VRuom.getServer().allServers.first()).fireAndForget() }
-        sender.sendMessage(Message.KICKALL_USE, TextReplacement("server", target.serverInfo.name))
+        targetPlayers.filter { !it.hasPermission(Permissions.Actions.KICKALL_BYPASS) }.forEach { it.createConnectionRequest(VRuom.getServer().allServers.first()).fireAndForget() }
+        sender.sendMessage(Message.KICKALL_USE, TextReplacement("server", if (args[0] == "all") "All" else targetPlayers.random().currentServer?.getOrNull()?.serverInfo?.name ?: "Unknown"))
         return
     }
     
