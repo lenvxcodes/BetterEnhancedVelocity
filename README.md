@@ -59,7 +59,8 @@ Once the plugin compiles, grab the jar from `/bin` folder.
 The precompiled JAR can be downloaded for free from:
 
 * GitHub releases: https://github.com/lenvxcodes/BetterEnhancedVelocity/releases/tag/stable
-
+* Modrinth: https://modrinth.com/plugin/betterenchantedvelocity
+  
 # Contributing
 
 This project is now maintained by Lenvx. All contributions, including bug fixes and new features, are welcome via pull requests on GitHub. If you encounter any issues, please open an issue on the GitHub repository.
