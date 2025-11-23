@@ -1,12 +1,12 @@
 # About
 
-EnhancedVelocity is a powerful Velocity plugin designed to significantly improve your server experience. This project
+BetterEnhancedVelocity is a powerful Velocity plugin designed to significantly improve your server experience. This project
 has undergone a comprehensive optimization and feature enhancement process, migrating to modern Kotlin practices and
 introducing new, highly requested functionalities.
 
 # What is it?
 
-With EnhancedVelocity, you gain access to a suite of versatile commands and features tailored for efficient server
+With BetterEnhancedVelocity, you gain access to a suite of versatile commands and features tailored for efficient server
 management:
 
 * `/glist`: View a list of players across all connected servers.
@@ -17,13 +17,13 @@ management:
 * `/kickall`: Kick all players from a server or the entire proxy.
 * **/move**: (NEW!) Seamlessly send players, entire servers, or all online players to a different destination server.
 * **Startup Commands**: (NEW!) Configure commands to be executed automatically when the Velocity proxy fully
-  initializes.
+  initiates.
 
 These commands and features are designed to be highly configurable and integrate smoothly into your Velocity setup.
 
 # Improvements & New Features
 
-This version of EnhancedVelocity brings significant enhancements:
+This version of BetterEnhancedVelocity brings significant enhancements:
 
 * **Kotlin Migration**: The codebase has been largely migrated from Java to Kotlin, resulting in more concise, readable,
   and maintainable code.
