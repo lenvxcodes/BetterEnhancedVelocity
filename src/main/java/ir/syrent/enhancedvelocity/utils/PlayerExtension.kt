@@ -1,7 +1,9 @@
 package ir.syrent.enhancedvelocity.utils
 
 import com.velocitypowered.api.command.CommandSource
+import com.velocitypowered.api.proxy.Player
 import ir.syrent.enhancedvelocity.storage.Message
+import ir.syrent.enhancedvelocity.vruom.VRuom
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
@@ -21,4 +23,9 @@ fun String.component(vararg tags: TagResolver): Component {
 
 fun String.legacyComponent(): Component {
     return LegacyComponentSerializer.legacy('&').deserialize(this)
+}
+
+@Throws(PlayerNotFoundException::class)
+fun getPlayer(name: String): Player {
+    return VRuom.getPlayer(name) ?: throw PlayerNotFoundException(name)
 }

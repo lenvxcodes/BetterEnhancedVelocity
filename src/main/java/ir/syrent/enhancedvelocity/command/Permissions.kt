@@ -17,7 +17,8 @@ class Permissions {
         const val FIND_VANISHED = "enhancedvelocity.actions.findvanished"
         const val KICKALL_BYPASS = "enhancedvelocity.actions.kickall.bypass"
         const val MOVE_ALL = "enhancedvelocity.actions.move.all" // New permission for moving all players
-        const val MOVE_SERVER = "enhancedvelocity.actions.move.server" // New permission for moving players from a server
+        const val MOVE_SERVER =
+            "enhancedvelocity.actions.move.server" // New permission for moving players from a server
         const val MOVE_PLAYER = "enhancedvelocity.actions.move.player" // New permission for moving a specific player
     }
 }

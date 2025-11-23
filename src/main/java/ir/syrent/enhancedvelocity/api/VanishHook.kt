@@ -3,7 +3,7 @@ package ir.syrent.enhancedvelocity.api
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import ir.syrent.enhancedvelocity.vruom.VRuom
-import java.util.UUID
+import java.util.*
 
 interface VanishHook {
     fun isVanished(uuid: UUID): Boolean

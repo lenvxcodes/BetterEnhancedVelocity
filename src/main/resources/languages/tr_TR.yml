@@ -41,3 +41,10 @@ features:
       use: "$successful_prefix <yellow>$server</yellow> <gradient:dark_green:green>sunucusundaki tüm kullanıcılar atıldı!"
       usage: "$warn_prefix <gradient:dark_red:red>Kullanım: <gold>/kickall <yellow><sunucu>"
       no_server: "$error_prefix <gradient:dark_red:red>Sunucu bulunamadı!"
+  move:
+    command:
+      usage: "$warn_prefix <gradient:dark_red:red>Kullanım: <gold>/move <yellow><oyuncu|server:<sunucu_adı>|all> <green><hedef_sunucu>"
+      success: "$successful_prefix <gradient:dark_green:green><gold>$count</gold> oyuncu başarıyla <gold>$destination</gold> sunucusuna taşındı."
+      no_players_found: "$error_prefix <gradient:dark_red:red>Bu seçimle taşınacak oyuncu bulunamadı."
+      already_on_server: "$warn_prefix <gradient:gold:yellow><gold>$player</gold> zaten <gold>$server</gold> sunucusunda."
+      failed: "$error_prefix <gradient:dark_red:red><gold>$count</gold> oyuncu taşınamadı."

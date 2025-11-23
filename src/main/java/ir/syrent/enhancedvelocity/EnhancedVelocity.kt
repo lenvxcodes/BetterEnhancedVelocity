@@ -7,31 +7,26 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
 import ir.syrent.enhancedvelocity.command.*
 import ir.syrent.enhancedvelocity.storage.Settings
-import ir.syrent.enhancedvelocity.vruom.VRUoMPlugin
 import ir.syrent.enhancedvelocity.vruom.VRuom
 import org.bstats.velocity.Metrics
 import org.slf4j.Logger
 import java.nio.file.Path
 
 class EnhancedVelocity @Inject constructor(
-    server: ProxyServer,
-    logger: Logger,
+    private val server: ProxyServer,
+    private val logger: Logger,
     private val metricsFactory: Metrics.Factory,
-    @DataDirectory dataDirectory: Path
-) : VRUoMPlugin(server, logger, dataDirectory) {
+    @DataDirectory private val dataDirectory: Path
+) {
 
     @Subscribe
     fun onProxyInitialization(event: ProxyInitializeEvent) {
-        instance = this
+        VRuom.initialize(this, this.server, this.logger, this.dataDirectory)
+        Settings.load()
 
         enableMetrics()
-        initializeInstances()
         registerCommands()
         executeStartupCommands()
-    }
-
-    private fun initializeInstances() {
-        Settings
     }
 
     private fun enableMetrics() {
@@ -46,7 +41,7 @@ class EnhancedVelocity @Inject constructor(
         AlertCommand()
         PingCommand()
         KickAllCommand()
-        MoveCommand() // Register the new MoveCommand
+        MoveCommand()
     }
 
     private fun executeStartupCommands() {
@@ -54,10 +49,5 @@ class EnhancedVelocity @Inject constructor(
             VRuom.server.commandManager.executeAsync(VRuom.server.consoleCommandSource, command)
             logger.info("Executed startup command: /$command")
         }
-    }
-
-    companion object {
-        lateinit var instance: EnhancedVelocity
-            private set
     }
 }

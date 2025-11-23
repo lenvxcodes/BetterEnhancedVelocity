@@ -36,6 +36,7 @@ enum class Message(val path: String) {
     MOVE_SUCCESS("features.move.command.success"), // New message
     MOVE_NO_PLAYERS_FOUND("features.move.command.no_players_found"), // New message
     MOVE_ALREADY_ON_SERVER("features.move.command.already_on_server"), // New message
+    MOVE_FAILED("features.move.command.failed"), // New message
     EMPTY("");
 
     fun get(vararg replacements: TextReplacement): String {

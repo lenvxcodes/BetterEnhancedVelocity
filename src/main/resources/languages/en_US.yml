@@ -47,3 +47,4 @@ features:
       success: "$successful_prefix <gradient:dark_green:green>Successfully moved <gold>$count</gold> players to <gold>$destination</gold>."
       no_players_found: "$error_prefix <gradient:dark_red:red>No players found to move with that selection."
       already_on_server: "$warn_prefix <gradient:gold:yellow><gold>$player</gold> is already on <gold>$server</gold>."
+      failed: "$error_prefix <gradient:dark_red:red>Failed to move <gold>$count</gold> players."

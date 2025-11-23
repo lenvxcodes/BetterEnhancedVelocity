@@ -41,14 +41,21 @@ class MoveCommand : SimpleCommand {
         val playersToMove: List<Player> = when {
             targetSelector == "all" -> {
                 if (!sender.hasPermission(Permissions.Actions.MOVE_ALL)) {
-                    sender.sendMessage(Message.NO_PERMISSION, TextReplacement("permission", Permissions.Actions.MOVE_ALL))
+                    sender.sendMessage(
+                        Message.NO_PERMISSION,
+                        TextReplacement("permission", Permissions.Actions.MOVE_ALL)
+                    )
                     return
                 }
                 VRuom.onlinePlayers.toList()
             }
+
             targetSelector.startsWith("server:") -> {
                 if (!sender.hasPermission(Permissions.Actions.MOVE_SERVER)) {
-                    sender.sendMessage(Message.NO_PERMISSION, TextReplacement("permission", Permissions.Actions.MOVE_SERVER))
+                    sender.sendMessage(
+                        Message.NO_PERMISSION,
+                        TextReplacement("permission", Permissions.Actions.MOVE_SERVER)
+                    )
                     return
                 }
                 val sourceServerName = targetSelector.substringAfter("server:")
@@ -59,9 +66,13 @@ class MoveCommand : SimpleCommand {
                 }
                 sourceServer.playersConnected.toList()
             }
+
             else -> {
                 if (!sender.hasPermission(Permissions.Actions.MOVE_PLAYER)) {
-                    sender.sendMessage(Message.NO_PERMISSION, TextReplacement("permission", Permissions.Actions.MOVE_PLAYER))
+                    sender.sendMessage(
+                        Message.NO_PERMISSION,
+                        TextReplacement("permission", Permissions.Actions.MOVE_PLAYER)
+                    )
                     return
                 }
                 val player = VRuom.getPlayer(targetSelector)
@@ -79,13 +90,25 @@ class MoveCommand : SimpleCommand {
         }
 
         var movedCount = 0
+        var alreadyOnServerCount = 0
+        var failedCount = 0
+
         for (player in playersToMove) {
-            if (player.currentServer.isPresent && player.currentServer.get().serverInfo.name.equals(destinationServer.serverInfo.name, ignoreCase = true)) {
-                sender.sendMessage(Message.MOVE_ALREADY_ON_SERVER, TextReplacement("player", player.username), TextReplacement("server", destinationServer.serverInfo.name))
+            if (player.currentServer.isPresent && player.currentServer.get().serverInfo.name.equals(
+                    destinationServer.serverInfo.name,
+                    ignoreCase = true
+                )
+            ) {
+                alreadyOnServerCount++
                 continue
             }
-            player.createConnectionRequest(destinationServer).fireAndForget()
-            movedCount++
+            player.createConnectionRequest(destinationServer).connect().thenAccept { result ->
+                if (result.isSuccessful) {
+                    movedCount++
+                } else {
+                    failedCount++
+                }
+            }
         }
 
         sender.sendMessage(
@@ -93,6 +116,19 @@ class MoveCommand : SimpleCommand {
             TextReplacement("count", movedCount.toString()),
             TextReplacement("destination", destinationServer.serverInfo.name)
         )
+        if (alreadyOnServerCount > 0) {
+            sender.sendMessage(
+                Message.MOVE_ALREADY_ON_SERVER,
+                TextReplacement("count", alreadyOnServerCount.toString()),
+                TextReplacement("server", destinationServer.serverInfo.name)
+            )
+        }
+        if (failedCount > 0) {
+            sender.sendMessage(
+                Message.MOVE_FAILED,
+                TextReplacement("count", failedCount.toString())
+            )
+        }
     }
 
     override fun suggest(invocation: SimpleCommand.Invocation): List<String> {
@@ -106,11 +142,13 @@ class MoveCommand : SimpleCommand {
                 VRuom.onlinePlayers.mapTo(playerSelectors) { it.username }
                 playerSelectors.filter { it.lowercase().startsWith(lastArg) }.sorted()
             }
+
             2 -> { // Suggest destination servers
                 VRuom.server.allServers.map { it.serverInfo.name }
                     .filter { it.lowercase().startsWith(lastArg) }
                     .sorted()
             }
+
             else -> emptyList()
         }
     }

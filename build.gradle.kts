@@ -1,12 +1,13 @@
 plugins {
     `java-library`
     `maven-publish`
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "1.9.24"
+    kotlin("plugin.serialization") version "1.9.24"
     id("io.github.goooler.shadow") version "8.1.7"
 }
 
 group = "ir.syrent"
-version = findProperty("version")
+version = findProperty("version") as String
 val slug = "enhancedvelocity"
 description = "Customize your Velocity network experience"
 
@@ -18,13 +19,15 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
-    annotationProcessor("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.24"))
+    compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
+    annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
 
     implementation("org.bstats:bstats-velocity:3.0.2")
     implementation("net.kyori:adventure-text-minimessage:4.17.0")
     implementation("org.spongepowered:configurate-yaml:4.1.2")
     implementation("commons-io:commons-io:2.16.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation(kotlin("stdlib-jdk8"))
 }
 
@@ -32,6 +35,7 @@ java {
     withSourcesJar()
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
+
 
 tasks {
     build {
@@ -43,7 +47,7 @@ tasks {
             expand(
                 "version" to project.version,
                 "slug" to slug,
-                "name" to project.name,
+                "name" to "EnhancedVelocity",
                 "description" to project.description
             )
         }

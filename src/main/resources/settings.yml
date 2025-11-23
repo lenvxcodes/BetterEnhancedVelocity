@@ -28,5 +28,5 @@ features:
         player: "<red>$player</red>"
   find:
     command: find
-    aliases: []
-startup_commands: []
+    aliases: [ ]
+startup_commands: [ ]

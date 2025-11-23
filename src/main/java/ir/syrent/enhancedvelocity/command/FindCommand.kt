@@ -1,10 +1,12 @@
 package ir.syrent.enhancedvelocity.command
 
 import com.velocitypowered.api.command.SimpleCommand
-import ir.syrent.enhancedvelocity.api.VanishHook
+import ir.syrent.enhancedvelocity.api.VanishManager
 import ir.syrent.enhancedvelocity.storage.Message
 import ir.syrent.enhancedvelocity.storage.Settings
+import ir.syrent.enhancedvelocity.utils.PlayerNotFoundException
 import ir.syrent.enhancedvelocity.utils.TextReplacement
+import ir.syrent.enhancedvelocity.utils.getPlayer
 import ir.syrent.enhancedvelocity.utils.sendMessage
 import ir.syrent.enhancedvelocity.vruom.VRuom
 import java.util.concurrent.CompletableFuture
@@ -29,14 +31,14 @@ class FindCommand : SimpleCommand {
             return
         }
 
-        val targetPlayer = VRuom.getPlayer(args[0])
-
-        if (targetPlayer == null) {
+        val targetPlayer = try {
+            getPlayer(args[0])
+        } catch (e: PlayerNotFoundException) {
             sender.sendMessage(Message.FIND_NO_TARGET)
             return
         }
 
-        val vanished = VanishHook.isVanished(targetPlayer.uniqueId)
+        val vanished = VanishManager.isVanished(targetPlayer.uniqueId)
         val server = targetPlayer.currentServer
 
         if (!server.isPresent && !vanished) {
@@ -53,14 +55,17 @@ class FindCommand : SimpleCommand {
             Message.FIND_USE,
             TextReplacement("player", targetPlayer.username),
             TextReplacement("server", server.map { it.serverInfo.name }.orElse("Unknown")),
-            TextReplacement("vanished", if (vanished && sender.hasPermission(Permissions.Actions.FIND_VANISHED)) Settings.formatMessage(Message.FIND_VANISHED) else "")
+            TextReplacement(
+                "vanished",
+                if (vanished && sender.hasPermission(Permissions.Actions.FIND_VANISHED)) Settings.formatMessage(Message.FIND_VANISHED) else ""
+            )
         )
     }
 
     override fun suggest(invocation: SimpleCommand.Invocation): List<String> {
         val args = invocation.arguments()
         val lastArg = args.lastOrNull()?.lowercase() ?: ""
-        return VanishHook.getNonVanishedPlayers()
+        return VanishManager.nonVanishedPlayers
             .map { it.username }
             .filter { it.lowercase().startsWith(lastArg) }
             .sorted()

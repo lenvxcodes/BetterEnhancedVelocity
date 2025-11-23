@@ -2,14 +2,25 @@ package ir.syrent.enhancedvelocity.vruom
 
 import com.velocitypowered.api.command.Command
 import com.velocitypowered.api.proxy.Player
+import com.velocitypowered.api.proxy.ProxyServer
+import org.slf4j.Logger
+import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
 object VRuom {
 
-    private val plugin by lazy { VRUoMPlugin.instance }
-    private val server by lazy { plugin.server }
-    private val logger by lazy { plugin.logger }
+    private lateinit var plugin: Any
+    lateinit var server: ProxyServer
+    lateinit var logger: Logger
+    lateinit var dataDirectory: Path
     private var debug = false
+
+    fun initialize(plugin: Any, server: ProxyServer, logger: Logger, dataDirectory: Path) {
+        this.plugin = plugin
+        this.server = server
+        this.logger = logger
+        this.dataDirectory = dataDirectory
+    }
 
     fun registerCommand(command: Command, name: String, vararg aliases: String) {
         val meta = server.commandManager.metaBuilder(name).aliases(*aliases).build()

@@ -7,7 +7,6 @@ import ir.syrent.enhancedvelocity.vruom.string.ResourceUtils
 import org.spongepowered.configurate.CommentedConfigurationNode
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader
 import java.io.File
-import java.nio.file.Path
 
 object Settings {
 
@@ -18,6 +17,7 @@ object Settings {
     lateinit var globalListCommand: String
     lateinit var globalListAliases: List<String>
     var globalListMaxServers: Int = 9
+    var progressCount: Int = 45
     lateinit var progressComplete: String
     lateinit var progressNotComplete: String
     lateinit var playerVanishDecoration: String
