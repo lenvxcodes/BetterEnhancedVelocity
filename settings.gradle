@@ -2,6 +2,14 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
     }
+    // Configure toolchain download repositories
+    toolchain {
+        // Use the Foojay toolchain repository for automatic JDK downloads
+        // This will allow Gradle to download JDK 17 if it's not found locally.
+        downloadRepositories {
+            foojay.repository()
+        }
+    }
 }
 
 rootProject.name = "EnhancedVelocity"
