@@ -1,5 +1,7 @@
 package ir.syrent.enhancedvelocity.storage
 
+import ir.syrent.enhancedvelocity.utils.TextReplacement
+
 enum class Message(val path: String) {
     RAW_PREFIX("general.raw_prefix"),
     PREFIX("general.prefix"),
@@ -30,5 +32,17 @@ enum class Message(val path: String) {
     KICKALL_USAGE("features.kickall.command.usage"),
     KICKALL_USE("features.kickall.command.use"),
     KICKALL_NO_SERVER("features.kickall.command.no_server"),
+    MOVE_USAGE("features.move.command.usage"), // New message
+    MOVE_SUCCESS("features.move.command.success"), // New message
+    MOVE_NO_PLAYERS_FOUND("features.move.command.no_players_found"), // New message
+    MOVE_ALREADY_ON_SERVER("features.move.command.already_on_server"), // New message
     EMPTY("");
+
+    fun get(vararg replacements: TextReplacement): String {
+        return Settings.formatMessage(this, *replacements)
+    }
+
+    override fun toString(): String {
+        return get()
+    }
 }

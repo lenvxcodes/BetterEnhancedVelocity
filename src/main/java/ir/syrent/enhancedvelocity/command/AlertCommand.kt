@@ -9,7 +9,7 @@ import ir.syrent.enhancedvelocity.vruom.VRuom
 class AlertCommand : SimpleCommand {
 
     init {
-        VRuom.registerCommand("alert", emptyList(), this)
+        VRuom.registerCommand(this, "alert")
     }
 
     override fun execute(invocation: SimpleCommand.Invocation) {
@@ -28,9 +28,8 @@ class AlertCommand : SimpleCommand {
 
         val message = args.joinToString(" ")
 
-        for (player in VRuom.getServer().allServers.map { it.playersConnected }.flatten()) {
-            player.sendMessage(Message.ALERT_USE, TextReplacement("message", message))
+        VRuom.onlinePlayers.forEach {
+            it.sendMessage(Message.ALERT_USE, TextReplacement("message", message))
         }
     }
-
 }

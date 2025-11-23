@@ -7,18 +7,17 @@ import ir.syrent.enhancedvelocity.vruom.string.ResourceUtils
 import org.spongepowered.configurate.CommentedConfigurationNode
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader
 import java.io.File
+import java.nio.file.Path
 
 object Settings {
 
     private val messages = mutableMapOf<Message, String>()
-
     val servers = mutableMapOf<String, ServerData>()
 
     lateinit var defaultLanguage: String
     lateinit var globalListCommand: String
     lateinit var globalListAliases: List<String>
     var globalListMaxServers: Int = 9
-    var progressCount = 45
     lateinit var progressComplete: String
     lateinit var progressNotComplete: String
     lateinit var playerVanishDecoration: String
@@ -27,77 +26,65 @@ object Settings {
     lateinit var findCommand: String
     lateinit var findAliases: List<String>
 
-    init {
-        load()
-    }
+    lateinit var moveCommand: String // New property for move command
+    lateinit var moveAliases: List<String> // New property for move command aliases
+
+    lateinit var startupCommands: List<String>
 
     fun load() {
-        val settingsYaml = YamlConfig("settings")
-        settingsYaml.create()
-        settingsYaml.load()
-        val settingsRoot = settingsYaml.root!!
+        val settingsConfig = YamlConfig("settings.yml")
+        val settingsRoot = settingsConfig.load()
 
-        defaultLanguage = settingsRoot.node("default_language").string ?: "en_US"
+        defaultLanguage = settingsRoot.node("default_language").getString("en_US")
 
         val features = settingsRoot.node("features")
         val globalList = features.node("global_list")
-        globalListCommand = globalList.node("command").string ?: "glist"
+        globalListCommand = globalList.node("command").getString("glist")
         globalListAliases = globalList.node("aliases").getList(String::class.java) ?: emptyList()
         globalListMaxServers = globalList.node("max-servers").getInt(9)
 
         val progress = globalList.node("progress")
-        progressCount = progress.node("count").int
-        progressComplete = progress.node("complete").string!!
-        progressNotComplete = progress.node("not_complete").string!!
+        progressCount = progress.node("count").getInt(45)
+        progressComplete = progress.node("complete").getString("■")
+        progressNotComplete = progress.node("not_complete").getString("□")
 
-        val vanish = globalList.node("vanish")
-        val decoration = vanish.node("decoration")
-        playerVanishDecoration = decoration.node("player").string!!
-        serverVanishDecoration = decoration.node("server").string!!
+        val vanish = globalList.node("vanish", "decoration")
+        playerVanishDecoration = vanish.node("player").getString("&7[&fV&7] &f\$player")
+        serverVanishDecoration = vanish.node("server").getString("&7[&fV&7] &f\$server")
 
-        servers.apply {
-            this.clear()
-            val serverSection = globalList.node("server")
-            for (server in serverSection.childrenMap()) {
-                val serverData = ServerData(
-                    server.value.node("displayname").string,
-                    server.value.node("sum").getList(String::class.java)?.toList(),
-                    server.value.node("hidden").boolean,
-                )
-                this[server.key.toString()] = serverData
-            }
+        servers.clear()
+        val serverSection = globalList.node("server")
+        for ((key, value) in serverSection.childrenMap()) {
+            val serverData = ServerData(
+                value.node("displayname").string,
+                value.node("sum").getList(String::class.java),
+                value.node("hidden").getBoolean(false),
+            )
+            servers[key.toString()] = serverData
         }
 
         val find = features.node("find")
-        findCommand = find.node("command").string ?: "find"
+        findCommand = find.node("command").getString("find")
         findAliases = find.node("aliases").getList(String::class.java) ?: emptyList()
 
-        val languageYaml = YamlConfig("languages/${defaultLanguage}")
-        languageYaml.create()
-        languageYaml.load()
-        val languageRoot = languageYaml.root!!
+        val move = features.node("move") // Load move command settings
+        moveCommand = move.node("command").getString("move")
+        moveAliases = move.node("aliases").getList(String::class.java) ?: emptyList()
 
-        messages.apply {
-            this.clear()
-            for (message in Message.values()) {
-                if (message == Message.EMPTY) {
-                    this[message] = ""
-                    continue
-                }
+        startupCommands = settingsRoot.node("startup_commands").getList(String::class.java) ?: emptyList()
 
-                var section: CommentedConfigurationNode? = null
-                for (part in message.path.split(".")) {
-                    section = if (section == null) languageRoot.node(part) else section.node(part)
-                }
+        val languageConfig = YamlConfig("languages/$defaultLanguage.yml")
+        val languageRoot = languageConfig.load()
 
-                this[message] = section?.string ?: "Cannot find message: ${message.name} in ${message.path}"
+        messages.clear()
+        for (message in Message.values()) {
+            if (message == Message.EMPTY) {
+                messages[message] = ""
+                continue
             }
+            messages[message] = languageRoot.node(message.path.split(".")).string ?: "Missing message: ${message.name}"
         }
-
-        settingsYaml.load()
-        languageYaml.load()
     }
-
 
     fun formatMessage(message: String, vararg replacements: TextReplacement): String {
         var formattedMessage = message
@@ -116,43 +103,23 @@ object Settings {
     }
 
     fun formatMessage(messages: List<String>, vararg replacements: TextReplacement): List<String> {
-        val messageList = mutableListOf<String>()
-        for (message in messages) {
-            messageList.add(formatMessage(message, *replacements))
-        }
-
-        return messageList
+        return messages.map { formatMessage(it, *replacements) }
     }
 
     private fun getMessage(message: Message): String {
         return messages[message] ?: "Unknown message ($message)"
     }
 
-    class YamlConfig(private val name: String) {
-        private var loader: YamlConfigurationLoader? = null
-        var root: CommentedConfigurationNode? = null
+    private class YamlConfig(private val filePath: String) {
+        private val file: File = VRuom.dataDirectory.resolve(filePath).toFile()
+        private val loader: YamlConfigurationLoader = YamlConfigurationLoader.builder().file(file).build()
 
-        fun create() {
-            val dataDirectory = VRuom.getDataDirectory().toFile()
-            dataDirectory.mkdir()
-
-            val copyFile = File(dataDirectory, "$name.yml")
-
-            if (!copyFile.exists()) {
-                copyFile.parentFile.mkdirs()
-                ResourceUtils.copyResource("$name.yml", copyFile)
+        fun load(): CommentedConfigurationNode {
+            if (!file.exists()) {
+                file.parentFile.mkdirs()
+                ResourceUtils.copyResource(filePath, file)
             }
-
-            loader = YamlConfigurationLoader.builder().file(copyFile).build()
+            return loader.load()
         }
-
-        fun load() {
-            if (loader == null) {
-                create()
-            }
-
-            root = loader!!.load()
-        }
-
     }
 }

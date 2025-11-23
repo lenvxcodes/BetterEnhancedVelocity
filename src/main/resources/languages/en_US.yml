@@ -41,3 +41,9 @@ features:
       use: "$successful_prefix <gradient:dark_green:green>Kicked all users from <yellow>$server</yellow>!"
       usage: "$warn_prefix <gradient:dark_red:red>Usage: <gold>/kickall <yellow><server>"
       no_server: "$error_prefix <gradient:dark_red:red>Server not found!"
+  move: # New section for move command
+    command:
+      usage: "$warn_prefix <gradient:dark_red:red>Usage: <gold>/move <yellow><player|server:<server_name>|all> <green><destination_server>"
+      success: "$successful_prefix <gradient:dark_green:green>Successfully moved <gold>$count</gold> players to <gold>$destination</gold>."
+      no_players_found: "$error_prefix <gradient:dark_red:red>No players found to move with that selection."
+      already_on_server: "$warn_prefix <gradient:gold:yellow><gold>$player</gold> is already on <gold>$server</gold>."

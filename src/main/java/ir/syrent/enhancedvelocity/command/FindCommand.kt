@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture
 class FindCommand : SimpleCommand {
 
     init {
-        VRuom.registerCommand(Settings.findCommand, Settings.findAliases, this)
+        VRuom.registerCommand(this, Settings.findCommand, *Settings.findAliases.toTypedArray())
     }
 
     override fun execute(invocation: SimpleCommand.Invocation) {
@@ -29,7 +29,7 @@ class FindCommand : SimpleCommand {
             return
         }
 
-        val targetPlayer = VRuom.getOnlinePlayers().find { it.username.lowercase() == args[0].lowercase() }
+        val targetPlayer = VRuom.getPlayer(args[0])
 
         if (targetPlayer == null) {
             sender.sendMessage(Message.FIND_NO_TARGET)
@@ -52,24 +52,21 @@ class FindCommand : SimpleCommand {
         sender.sendMessage(
             Message.FIND_USE,
             TextReplacement("player", targetPlayer.username),
-            TextReplacement("server", if (server.isPresent) server.get().serverInfo.name else "Unknown"),
+            TextReplacement("server", server.map { it.serverInfo.name }.orElse("Unknown")),
             TextReplacement("vanished", if (vanished && sender.hasPermission(Permissions.Actions.FIND_VANISHED)) Settings.formatMessage(Message.FIND_VANISHED) else "")
         )
     }
 
     override fun suggest(invocation: SimpleCommand.Invocation): List<String> {
-        val list = VanishHook.getNonVanishedPlayers().map { it.username }
-
-        return if (list.isNotEmpty()) list.filter { it.lowercase().startsWith(invocation.arguments().last().lowercase()) }.sorted() else list
+        val args = invocation.arguments()
+        val lastArg = args.lastOrNull()?.lowercase() ?: ""
+        return VanishHook.getNonVanishedPlayers()
+            .map { it.username }
+            .filter { it.lowercase().startsWith(lastArg) }
+            .sorted()
     }
 
     override fun suggestAsync(invocation: SimpleCommand.Invocation): CompletableFuture<List<String>> {
-        val future = CompletableFuture<List<String>>()
-        val list = mutableListOf<String>()
-        val args = invocation.arguments()
-
-        list.addAll(VanishHook.getNonVanishedPlayers().map { it.username })
-        future.complete(if (args.isNotEmpty()) list.filter { it.lowercase().startsWith(args.last().lowercase()) }.sorted() else list)
-        return future
+        return CompletableFuture.completedFuture(suggest(invocation))
     }
 }

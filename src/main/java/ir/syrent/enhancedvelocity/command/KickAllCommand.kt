@@ -6,12 +6,11 @@ import ir.syrent.enhancedvelocity.utils.TextReplacement
 import ir.syrent.enhancedvelocity.utils.sendMessage
 import ir.syrent.enhancedvelocity.vruom.VRuom
 import java.util.concurrent.CompletableFuture
-import kotlin.jvm.optionals.getOrNull
 
 class KickAllCommand : SimpleCommand {
 
     init {
-        VRuom.registerCommand("kickall", emptyList(), this)
+        VRuom.registerCommand(this, "kickall")
     }
 
     override fun execute(invocation: SimpleCommand.Invocation) {
@@ -28,34 +27,33 @@ class KickAllCommand : SimpleCommand {
             return
         }
 
-        val targetPlayers = if (args[0].lowercase() == "all") VRuom.getOnlinePlayers() else VRuom.getServer().allServers.find { it.serverInfo.name.lowercase() == args[0].lowercase() }?.playersConnected
+        val serverName = args[0].lowercase()
+        val targetPlayers = if (serverName == "all") {
+            VRuom.onlinePlayers
+        } else {
+            VRuom.server.getServer(serverName).map { it.playersConnected }.orElse(null)
+        }
 
         if (targetPlayers == null) {
             sender.sendMessage(Message.KICKALL_NO_SERVER)
             return
         }
 
-        targetPlayers.filter { !it.hasPermission(Permissions.Actions.KICKALL_BYPASS) }.forEach { it.createConnectionRequest(VRuom.getServer().allServers.first()).fireAndForget() }
-        sender.sendMessage(Message.KICKALL_USE, TextReplacement("server", if (args[0] == "all") "All" else targetPlayers.random().currentServer?.getOrNull()?.serverInfo?.name ?: "Unknown"))
-        return
-    }
-    
-    override fun suggest(invocation: SimpleCommand.Invocation): List<String> {
-        val list = VRuom.getServer().allServers.map { it.serverInfo.name }
+        val lobbyServer = VRuom.server.allServers.first()
+        targetPlayers
+            .filterNot { it.hasPermission(Permissions.Actions.KICKALL_BYPASS) }
+            .forEach { it.createConnectionRequest(lobbyServer).fireAndForget() }
 
-        return if (list.isNotEmpty()) list.filter { it.lowercase().startsWith(invocation.arguments().last().lowercase()) }.sorted() else list
+        sender.sendMessage(Message.KICKALL_USE, TextReplacement("server", serverName))
+    }
+
+    override fun suggest(invocation: SimpleCommand.Invocation): List<String> {
+        val lastArg = invocation.arguments().lastOrNull()?.lowercase() ?: ""
+        val servers = VRuom.server.allServers.map { it.serverInfo.name }
+        return (servers + "all").filter { it.lowercase().startsWith(lastArg) }.sorted()
     }
 
     override fun suggestAsync(invocation: SimpleCommand.Invocation): CompletableFuture<List<String>> {
-        val future = CompletableFuture<List<String>>()
-        val list = mutableListOf<String>()
-        val args = invocation.arguments()
-
-        list.addAll(VRuom.getServer().allServers.map { it.serverInfo.name })
-        future.complete(if (args.isNotEmpty()) list.filter { it.lowercase().startsWith(args.last().lowercase()) }.sorted() else list)
-        return future
+        return CompletableFuture.completedFuture(suggest(invocation))
     }
-
-
-
 }
